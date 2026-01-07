@@ -1,0 +1,19 @@
+<h2>Products</h2>
+
+<form method="get">
+  <input name="q" placeholder="Search product">
+  <button type="submit">Search</button>
+</form>
+
+<ul>
+{% for p in products %}
+  <li>
+    {{ p[1] }} - ₹{{ p[3] }}
+    <a href="/add_to_cart?id={{ p[0] }}&price={{ p[3] }}">Add to Cart</a>
+  </li>
+{% endfor %}
+</ul>
+
+<a href="/orders">My Orders</a> |
+<a href="/admin">Admin</a> |
+<a href="/logout">Logout</a>

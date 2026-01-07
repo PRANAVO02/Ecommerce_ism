@@ -1,0 +1,19 @@
+<h2>Orders</h2>
+
+<table border="1">
+<tr>
+  <th>Order ID</th>
+  <th>Total</th>
+  <th>Status</th>
+</tr>
+
+{% for o in orders %}
+<tr>
+  <td>{{ o[0] }}</td>
+  <td>{{ o[2] }}</td>
+  <td>{{ o[3] }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<a href="/products">Back</a>

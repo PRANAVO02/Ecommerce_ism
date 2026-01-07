@@ -1,0 +1,11 @@
+<h2>Your Cart</h2>
+
+{% if cart %}
+  Product ID: {{ cart.pid }} <br>
+  Price: ₹{{ cart.price }} <br>
+  <a href="/checkout">Checkout</a>
+{% else %}
+  Cart is empty
+{% endif %}
+
+<br><a href="/products">Back</a>
