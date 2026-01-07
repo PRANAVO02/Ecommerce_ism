@@ -4,6 +4,26 @@ from flask_mysqldb import MySQL
 app = Flask(__name__)
 app.secret_key = "veryweaksecret"
 
+# logs
+import logging
+from flask import request
+from datetime import datetime
+
+logging.basicConfig(
+    filename='logs/access.log',
+    level=logging.INFO,
+    format='%(asctime)s %(message)s'
+)
+
+@app.before_request
+def log_request():
+    logging.info(
+        f"IP={request.remote_addr} "
+        f"URL={request.path} "
+        f"ARGS={dict(request.args)}"
+    )
+
+
 # MySQL configuration
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'

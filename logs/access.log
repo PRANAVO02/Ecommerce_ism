@@ -1,0 +1,68 @@
+2026-01-08 02:19:21,254 [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-01-08 02:19:21,255 [33mPress CTRL+C to quit[0m
+2026-01-08 02:19:21,313  * Restarting with watchdog (windowsapi)
+2026-01-08 02:19:22,157  * Debugger is active!
+2026-01-08 02:19:22,166  * Debugger PIN: 926-397-905
+2026-01-08 02:19:24,423  * Detected change in 'C:\\Users\\dhars\\AppData\\Roaming\\Python\\Python312\\site-packages\\flask\\wrappers.py', reloading
+2026-01-08 02:19:24,423  * Detected change in 'C:\\Users\\dhars\\AppData\\Roaming\\Python\\Python312\\site-packages\\werkzeug\\wrappers\\__init__.py', reloading
+2026-01-08 02:19:24,423  * Detected change in 'C:\\Users\\dhars\\AppData\\Roaming\\Python\\Python312\\site-packages\\werkzeug\\wrappers\\request.py', reloading
+2026-01-08 02:19:25,361  * Restarting with watchdog (windowsapi)
+2026-01-08 02:19:26,223  * Debugger is active!
+2026-01-08 02:19:26,233  * Debugger PIN: 926-397-905
+2026-01-08 02:20:34,335 [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-01-08 02:20:34,337 [33mPress CTRL+C to quit[0m
+2026-01-08 02:20:34,372  * Restarting with watchdog (windowsapi)
+2026-01-08 02:20:35,296  * Debugger is active!
+2026-01-08 02:20:35,296  * Debugger PIN: 926-397-905
+2026-01-08 02:22:00,243 IP=127.0.0.1 URL=/ ARGS={}
+2026-01-08 02:22:00,251 127.0.0.1 - - [08/Jan/2026 02:22:00] "GET / HTTP/1.1" 200 -
+2026-01-08 02:22:00,402 IP=127.0.0.1 URL=/static/style.css ARGS={}
+2026-01-08 02:22:00,497 127.0.0.1 - - [08/Jan/2026 02:22:00] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+2026-01-08 02:22:07,090 IP=127.0.0.1 URL=/login ARGS={}
+2026-01-08 02:22:07,125 127.0.0.1 - - [08/Jan/2026 02:22:07] "[32mPOST /login HTTP/1.1[0m" 302 -
+2026-01-08 02:22:07,138 IP=127.0.0.1 URL=/products ARGS={}
+2026-01-08 02:22:07,143 127.0.0.1 - - [08/Jan/2026 02:22:07] "GET /products HTTP/1.1" 200 -
+2026-01-08 02:22:07,208 IP=127.0.0.1 URL=/static/style.css ARGS={}
+2026-01-08 02:22:07,211 127.0.0.1 - - [08/Jan/2026 02:22:07] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+2026-01-08 02:22:10,049 IP=127.0.0.1 URL=/add_to_cart ARGS={'id': '1', 'price': '60000'}
+2026-01-08 02:22:10,051 127.0.0.1 - - [08/Jan/2026 02:22:10] "[32mGET /add_to_cart?id=1&price=60000 HTTP/1.1[0m" 302 -
+2026-01-08 02:22:10,067 IP=127.0.0.1 URL=/cart ARGS={}
+2026-01-08 02:22:10,074 127.0.0.1 - - [08/Jan/2026 02:22:10] "GET /cart HTTP/1.1" 200 -
+2026-01-08 02:22:10,162 IP=127.0.0.1 URL=/static/style.css ARGS={}
+2026-01-08 02:22:10,166 127.0.0.1 - - [08/Jan/2026 02:22:10] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+2026-01-08 02:22:12,814 IP=127.0.0.1 URL=/checkout ARGS={}
+2026-01-08 02:22:12,838 127.0.0.1 - - [08/Jan/2026 02:22:12] "GET /checkout HTTP/1.1" 200 -
+2026-01-08 02:22:16,984 IP=127.0.0.1 URL=/products ARGS={}
+2026-01-08 02:22:16,996 127.0.0.1 - - [08/Jan/2026 02:22:16] "GET /products HTTP/1.1" 200 -
+2026-01-08 02:22:17,061 IP=127.0.0.1 URL=/static/style.css ARGS={}
+2026-01-08 02:22:17,065 127.0.0.1 - - [08/Jan/2026 02:22:17] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+2026-01-08 02:22:19,376 IP=127.0.0.1 URL=/logout ARGS={}
+2026-01-08 02:22:19,377 127.0.0.1 - - [08/Jan/2026 02:22:19] "[32mGET /logout HTTP/1.1[0m" 302 -
+2026-01-08 02:22:19,390 IP=127.0.0.1 URL=/ ARGS={}
+2026-01-08 02:22:19,390 127.0.0.1 - - [08/Jan/2026 02:22:19] "GET / HTTP/1.1" 200 -
+2026-01-08 02:22:19,485 IP=127.0.0.1 URL=/static/style.css ARGS={}
+2026-01-08 02:22:19,489 127.0.0.1 - - [08/Jan/2026 02:22:19] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+2026-01-08 02:23:15,722 [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-01-08 02:23:15,722 [33mPress CTRL+C to quit[0m
+2026-01-08 02:23:15,776  * Restarting with watchdog (windowsapi)
+2026-01-08 02:23:16,645  * Debugger is active!
+2026-01-08 02:23:16,658  * Debugger PIN: 926-397-905
+2026-01-08 02:23:20,644 IP=127.0.0.1 URL=/ ARGS={}
+2026-01-08 02:23:20,657 127.0.0.1 - - [08/Jan/2026 02:23:20] "GET / HTTP/1.1" 200 -
+2026-01-08 02:23:20,719 IP=127.0.0.1 URL=/static/style.css ARGS={}
+2026-01-08 02:23:20,797 127.0.0.1 - - [08/Jan/2026 02:23:20] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+2026-01-08 02:23:30,279 IP=127.0.0.1 URL=/login ARGS={}
+2026-01-08 02:23:30,305 127.0.0.1 - - [08/Jan/2026 02:23:30] "[32mPOST /login HTTP/1.1[0m" 302 -
+2026-01-08 02:23:30,315 IP=127.0.0.1 URL=/products ARGS={}
+2026-01-08 02:23:30,326 127.0.0.1 - - [08/Jan/2026 02:23:30] "GET /products HTTP/1.1" 200 -
+2026-01-08 02:23:30,386 IP=127.0.0.1 URL=/static/style.css ARGS={}
+2026-01-08 02:23:30,387 127.0.0.1 - - [08/Jan/2026 02:23:30] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+2026-01-08 02:23:35,993 IP=127.0.0.1 URL=/logout ARGS={}
+2026-01-08 02:23:35,993 127.0.0.1 - - [08/Jan/2026 02:23:35] "[32mGET /logout HTTP/1.1[0m" 302 -
+2026-01-08 02:23:36,014 IP=127.0.0.1 URL=/ ARGS={}
+2026-01-08 02:23:36,015 127.0.0.1 - - [08/Jan/2026 02:23:36] "GET / HTTP/1.1" 200 -
+2026-01-08 02:23:36,126 IP=127.0.0.1 URL=/static/style.css ARGS={}
+2026-01-08 02:23:36,128 127.0.0.1 - - [08/Jan/2026 02:23:36] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
