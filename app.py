@@ -7,8 +7,8 @@ app.secret_key = "veryweaksecret"
 # MySQL configuration
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-# app.config['MYSQL_PASSWORD'] = 'test'   # pranavo
-app.config['MYSQL_PASSWORD'] = 'root'   # raghul
+app.config['MYSQL_PASSWORD'] = 'test'   # pranavo
+# app.config['MYSQL_PASSWORD'] = 'root'   # raghul
 app.config['MYSQL_DB'] = 'secureshop'
 
 mysql = MySQL(app)

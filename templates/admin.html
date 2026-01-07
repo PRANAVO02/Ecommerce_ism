@@ -1,21 +1,36 @@
-<h2>Admin Panel</h2>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel | SecureShop</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
 
-<table border="1">
-<tr>
-  <th>ID</th>
-  <th>Username</th>
-  <th>Email</th>
-  <th>Role</th>
-</tr>
+  <div class="container">
+    <h2>Admin Panel</h2>
 
-{% for u in users %}
-<tr>
-  <td>{{ u[0] }}</td>
-  <td>{{ u[1] }}</td>
-  <td>{{ u[4] }}</td>
-  <td>{{ u[3] }}</td>
-</tr>
-{% endfor %}
-</table>
+    <div class="card">
+      <table>
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Role</th>
+        </tr>
 
-<a href="/products">Back</a>
+        {% for u in users %}
+        <tr>
+          <td>{{ u[0] }}</td>
+          <td>{{ u[1] }}</td>
+          <td>{{ u[4] }}</td>
+          <td>{{ u[3] }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <a href="/products" class="link">← Back</a>
+  </div>
+
+</body>
+</html>

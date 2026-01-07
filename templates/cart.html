@@ -1,11 +1,26 @@
-<h2>Your Cart</h2>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Your Cart | SecureShop</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
 
-{% if cart %}
-  Product ID: {{ cart.pid }} <br>
-  Price: ₹{{ cart.price }} <br>
-  <a href="/checkout">Checkout</a>
-{% else %}
-  Cart is empty
-{% endif %}
+  <div class="container">
+    <h2>Your Cart</h2>
 
-<br><a href="/products">Back</a>
+    {% if cart %}
+      <div class="card">
+        <p><strong>Product ID:</strong> {{ cart.pid }}</p>
+        <p><strong>Price:</strong> ₹{{ cart.price }}</p>
+        <a href="/checkout" class="btn primary">Checkout</a>
+      </div>
+    {% else %}
+      <p class="empty">Cart is empty</p>
+    {% endif %}
+
+    <a href="/products" class="link">← Back to Products</a>
+  </div>
+
+</body>
+</html>

@@ -1,14 +1,186 @@
+/* ================= RESET ================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Arial;
-  background: #f2f2f2;
-  padding: 30px;
-}
-
-input, button {
-  padding: 8px;
-  margin: 5px;
-}
-
-h2 {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f4f6f9;
   color: #333;
+  line-height: 1.5;
+}
+
+/* ================= AUTH PAGE ================= */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+}
+
+.auth-container .card {
+  width: 100%;
+}
+
+/* ================= GLOBAL CONTAINER ================= */
+.container {
+  max-width: 1100px;
+  margin: 30px auto;
+  padding: 0 20px;
+}
+
+/* ================= NAVBAR ================= */
+.navbar {
+  width: 100%;
+  background: #ffffff;
+  padding: 15px 20px;
+  display: flex;
+  flex-wrap: wrap;            /* ✅ prevents overlap */
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.nav-left {
+  font-size: 20px;
+  font-weight: bold;
+  color: #667eea;
+}
+
+.nav-right {
+  display: flex;
+  flex-wrap: wrap;            /* ✅ prevents collision */
+  gap: 15px;
+}
+
+.navbar a {
+  text-decoration: none;
+  color: #555;
+  font-weight: 500;
+}
+
+.navbar .danger {
+  color: #e74c3c;
+}
+
+/* ================= CARDS ================= */
+.card {
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+/* ================= FORMS ================= */
+form {
+  width: 100%;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* ================= BUTTONS ================= */
+.btn {
+  display: inline-block;
+  padding: 10px 18px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  background: #ddd;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;        /* ✅ prevents text break */
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #ffffff;
+}
+
+/* ================= PRODUCTS GRID ================= */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.product {
+  text-align: center;
+}
+
+.price {
+  color: #27ae60;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+/* ================= SEARCH ================= */
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.search-bar input {
+  flex: 1;
+}
+
+/* ================= TABLES ================= */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  background: #f0f0f0;
+}
+
+/* ================= TEXT / LINKS ================= */
+h2 {
+  margin-bottom: 15px;
+}
+
+.link {
+  display: inline-block;
+  margin-top: 15px;
+  text-decoration: none;
+  color: #667eea;
+}
+
+.empty {
+  color: #999;
+}
+
+/* ================= MOBILE FIX ================= */
+@media (max-width: 600px) {
+  .search-bar {
+    flex-direction: column;
+  }
+
+  .nav-right {
+    justify-content: flex-start;
+  }
 }

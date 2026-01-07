@@ -1,19 +1,41 @@
-<h2>Products</h2>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Products | SecureShop</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="nav-left">SecureShop</div>
+      <div class="nav-right">
+        <a href="/orders">Orders</a>
+        <a href="/admin">Admin</a>
+        <a href="/logout" class="danger">Logout</a>
+      </div>
+    </nav>
 
-<form method="get">
-  <input name="q" placeholder="Search product">
-  <button type="submit">Search</button>
-</form>
+    <div class="container">
+      <h2>Products</h2>
 
-<ul>
-{% for p in products %}
-  <li>
-    {{ p[1] }} - ₹{{ p[3] }}
-    <a href="/add_to_cart?id={{ p[0] }}&price={{ p[3] }}">Add to Cart</a>
-  </li>
-{% endfor %}
-</ul>
+      <form method="get" class="search-bar">
+        <input name="q" placeholder="Search product" />
+        <button class="btn">Search</button>
+      </form>
 
-<a href="/orders">My Orders</a> |
-<a href="/admin">Admin</a> |
-<a href="/logout">Logout</a>
+      <div class="grid">
+        {% for p in products %}
+        <div class="card product">
+          <h3>{{ p[1] }}</h3>
+          <p class="price">₹{{ p[3] }}</p>
+          <a
+            href="/add_to_cart?id={{ p[0] }}&price={{ p[3] }}"
+            class="btn primary"
+          >
+            Add to Cart
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </body>
+</html>
