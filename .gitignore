@@ -1,3 +1,5 @@
 # Ignore logs and runtime files
 logs/
 *.log
+__pycache__/
+config.py

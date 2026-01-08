@@ -1,12 +1,13 @@
 from flask import Flask, request, render_template, redirect, session
 from flask_mysqldb import MySQL
+import config
 
+# ---------------- APP INIT ----------------
 app = Flask(__name__)
-app.secret_key = "veryweaksecret"
+app.secret_key = config.SECRET_KEY
 
-# logs
+# ---------------- LOGGING ----------------
 import logging
-from flask import request
 from datetime import datetime
 
 logging.basicConfig(
@@ -23,13 +24,11 @@ def log_request():
         f"ARGS={dict(request.args)}"
     )
 
-
-# MySQL configuration
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-# app.config['MYSQL_PASSWORD'] = 'test'   # pranavo
-app.config['MYSQL_PASSWORD'] = 'root'   # raghul
-app.config['MYSQL_DB'] = 'secureshop'
+# ---------------- MYSQL CONFIG ----------------
+app.config['MYSQL_HOST'] = config.MYSQL_HOST
+app.config['MYSQL_USER'] = config.MYSQL_USER
+app.config['MYSQL_PASSWORD'] = config.MYSQL_PASSWORD
+app.config['MYSQL_DB'] = config.MYSQL_DB
 
 mysql = MySQL(app)
 
@@ -44,7 +43,7 @@ def do_login():
     p = request.form['password']
 
     cur = mysql.connection.cursor()
-    # ❌ SQL Injection vulnerability
+    # ❌ SQL Injection vulnerability (INTENTIONAL)
     cur.execute(f"SELECT * FROM users WHERE username='{u}' AND password='{p}'")
     user = cur.fetchone()
 
@@ -53,6 +52,7 @@ def do_login():
         session['user'] = user[1]
         session['role'] = user[3]
         return redirect('/products')
+
     return "Login Failed"
 
 # ---------------- PRODUCTS ----------------
@@ -115,5 +115,6 @@ def logout():
     session.clear()
     return redirect('/')
 
+# ---------------- RUN ----------------
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
