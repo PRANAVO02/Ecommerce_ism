@@ -1,7 +1,6 @@
 from flask import Flask, request, render_template, redirect, session
 from flask_mysqldb import MySQL
 import logging
-from datetime import datetime
 import config
 import os
 
@@ -17,13 +16,13 @@ if not os.path.exists("logs"):
 logging.basicConfig(
     filename="logs/access.log",
     level=logging.INFO,
-    format="%(asctime)s %(message)s"
+    format="%(asctime)s IP=%(message)s"
 )
 
 @app.before_request
 def log_request():
     logging.info(
-        f"IP={request.remote_addr} "
+        f"{request.remote_addr} "
         f"URL={request.path} "
         f"METHOD={request.method} "
         f"ARGS={dict(request.args)} "

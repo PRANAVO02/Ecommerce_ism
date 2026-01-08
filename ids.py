@@ -1,6 +1,7 @@
 import time
 import re
 from collections import defaultdict
+from datetime import datetime
 
 LOG_FILE = "logs/access.log"
 
@@ -126,13 +127,14 @@ def analyze():
 
     for line in logs:
         ip, url, payload = extract_fields(line)
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         sig = detect_signature(line)
         if sig:
             severity = "HIGH"
             action = decision_engine(ip, sig, severity)
 
-            print("\n[ALERT] 🚨 SIGNATURE ATTACK")
+            print(f"\n[{timestamp}] [ALERT] 🚨 SIGNATURE ATTACK")
             print(f"Type     : {sig}")
             print(f"Severity : {severity}")
             print(f"IP       : {ip}")
@@ -144,7 +146,7 @@ def analyze():
             severity = "MEDIUM"
             action = decision_engine(ip, anomaly, severity)
 
-            print("\n[ALERT] ⚠️ ANOMALY")
+            print(f"\n[{timestamp}] [ALERT] ⚠️ ANOMALY DETECTED")
             print(f"Type     : {anomaly}")
             print(f"Severity : {severity}")
             print(f"IP       : {ip}")
@@ -152,7 +154,7 @@ def analyze():
 
 # ================= RUN =================
 if __name__ == "__main__":
-    print("[IDS] Hybrid IDS + Decision Engine Running...")
+    print("[IDS] Hybrid IDS + Decision Engine + Timestamp Running...")
     while True:
         analyze()
         time.sleep(5)
