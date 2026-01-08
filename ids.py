@@ -4,9 +4,7 @@ from collections import defaultdict
 
 LOG_FILE = "logs/access.log"
 
-# =========================
-# SIGNATURE-BASED SETTINGS
-# =========================
+# ================= SIGNATURE PATTERNS =================
 SQLI_PATTERNS = [
     r"(\bor\b\s+1=1)",
     r"union\s+select",
@@ -16,24 +14,22 @@ SQLI_PATTERNS = [
     r"select\s+\*"
 ]
 
-# =========================
-# ANOMALY-BASED BASELINES
-# =========================
-REQUEST_LIMIT = 20     # per minute (sensitive endpoints)
-LOGIN_LIMIT = 5        # per minute
+# ================= ANOMALY BASELINES =================
+REQUEST_LIMIT = 20
+LOGIN_LIMIT = 3
 MAX_INPUT_LENGTH = 100
 
 request_counter = defaultdict(list)
 login_counter = defaultdict(list)
 idor_counter = defaultdict(int)
 
-# =========================
-# FILE POINTER (IMPORTANT)
-# =========================
+# ================= DECISION ENGINE STATE =================
+attack_history = defaultdict(list)
+
+# ================= FILE POINTER =================
 last_position = 0
 
 def read_new_logs():
-    """Read only newly added log lines"""
     global last_position
     with open(LOG_FILE, "r", encoding="utf-8", errors="ignore") as f:
         f.seek(last_position)
@@ -41,116 +37,122 @@ def read_new_logs():
         last_position = f.tell()
     return lines
 
-def extract_ip_url(line):
+def extract_fields(line):
     ip = re.search(r"IP=([\d\.]+)", line)
     url = re.search(r"URL=([^\s]+)", line)
-    args = re.search(r"ARGS=(\{.*\})", line)
+    args = re.search(r"ARGS=(\{.*?\})", line)
+    form = re.search(r"FORM=(\{.*?\})", line)
+
+    payload = (args.group(1) if args else "") + " " + (form.group(1) if form else "")
 
     return (
         ip.group(1) if ip else "unknown",
         url.group(1) if url else "unknown",
-        args.group(1) if args else ""
+        payload
     )
 
-# =========================
-# SIGNATURE DETECTION
-# =========================
-def detect_signature_attack(line):
+# ================= SIGNATURE DETECTION =================
+def detect_signature(line):
     for pattern in SQLI_PATTERNS:
         if re.search(pattern, line, re.IGNORECASE):
             return "SQL Injection"
     return None
 
-# =========================
-# ANOMALY DETECTION
-# =========================
-def detect_anomaly(ip, url, args):
+# ================= ANOMALY DETECTION =================
+def detect_anomaly(ip, url, payload):
     now = time.time()
 
-    # Ignore static resources completely
     if url.startswith("/static"):
         return None
 
-    # -------------------------
-    # Request rate anomaly
-    # -------------------------
     request_counter[ip].append(now)
     request_counter[ip] = [t for t in request_counter[ip] if now - t < 60]
 
     if url in ["/login", "/admin", "/orders", "/checkout"]:
         if len(request_counter[ip]) > REQUEST_LIMIT:
-            return "High Request Rate on Sensitive Endpoint"
+            return "High Request Rate"
 
-    # -------------------------
-    # Brute force anomaly
-    # -------------------------
     if url == "/login":
         login_counter[ip].append(now)
         login_counter[ip] = [t for t in login_counter[ip] if now - t < 60]
-
         if len(login_counter[ip]) > LOGIN_LIMIT:
-            return "Brute Force Login Attempt"
+            return "Brute Force Login"
 
-    # -------------------------
-    # Input length anomaly
-    # -------------------------
-    if len(args) > MAX_INPUT_LENGTH:
-        return "Abnormally Long Input (Unknown Attack)"
+    if len(payload) > MAX_INPUT_LENGTH:
+        return "Abnormally Long Input"
 
-    # -------------------------
-    # IDOR enumeration anomaly
-    # -------------------------
-    if "/orders" in url and "uid=" in args:
+    if "/orders" in url and "uid=" in payload:
         idor_counter[ip] += 1
         if idor_counter[ip] > 3:
-            return "ID Enumeration (IDOR Attack)"
+            return "ID Enumeration (IDOR)"
 
-    # -------------------------
-    # Business logic anomaly
-    # -------------------------
-    if "price=" in args:
+    if "price=" in payload:
         try:
-            price = int(re.search(r"price=(\d+)", args).group(1))
+            price = int(re.search(r"price=(\d+)", payload).group(1))
             if price <= 0 or price > 100000:
-                return "Price Manipulation (Business Logic Abuse)"
+                return "Price Manipulation"
         except:
             pass
 
     return None
 
-# =========================
-# MAIN ANALYSIS LOOP
-# =========================
+# ================= DECISION ENGINE =================
+def decision_engine(ip, attack_type, severity):
+    now = time.time()
+    attack_history[ip].append((attack_type, severity, now))
+
+    attack_history[ip] = [
+        a for a in attack_history[ip] if now - a[2] < 300
+    ]
+
+    high_count = sum(1 for a in attack_history[ip] if a[1] == "HIGH")
+    medium_count = sum(1 for a in attack_history[ip] if a[1] == "MEDIUM")
+
+    if severity == "HIGH":
+        if high_count >= 2:
+            return "BLOCK + SELF-HEAL"
+        return "IMMEDIATE RESPONSE"
+
+    if severity == "MEDIUM":
+        if medium_count >= 3:
+            return "DECEPTION"
+        return "MONITOR"
+
+    return "LOG"
+
+# ================= MAIN LOOP =================
 def analyze():
     logs = read_new_logs()
 
     for line in logs:
-        ip, url, args = extract_ip_url(line)
+        ip, url, payload = extract_fields(line)
 
-        # ---------- SIGNATURE ----------
-        sig = detect_signature_attack(line)
+        sig = detect_signature(line)
         if sig:
-            print("\n[ALERT] 🚨 SIGNATURE ATTACK DETECTED")
+            severity = "HIGH"
+            action = decision_engine(ip, sig, severity)
+
+            print("\n[ALERT] 🚨 SIGNATURE ATTACK")
             print(f"Type     : {sig}")
-            print(f"Severity : HIGH")
+            print(f"Severity : {severity}")
             print(f"IP       : {ip}")
-            print(f"Request  : {line.strip()}")
+            print(f"Action   : {action}")
             continue
 
-        # ---------- ANOMALY ----------
-        anomaly = detect_anomaly(ip, url, args)
+        anomaly = detect_anomaly(ip, url, payload)
         if anomaly:
-            print("\n[ALERT] ⚠️ ANOMALY DETECTED")
-            print(f"Type     : {anomaly}")
-            print(f"Severity : MEDIUM")
-            print(f"IP       : {ip}")
-            print(f"Request  : {line.strip()}")
+            severity = "MEDIUM"
+            action = decision_engine(ip, anomaly, severity)
 
-# =========================
-# RUN IDS
-# =========================
+            print("\n[ALERT] ⚠️ ANOMALY")
+            print(f"Type     : {anomaly}")
+            print(f"Severity : {severity}")
+            print(f"IP       : {ip}")
+            print(f"Action   : {action}")
+
+# ================= RUN =================
 if __name__ == "__main__":
-    print("[IDS] Hybrid IDS (Signature + Anomaly) Running...")
+    print("[IDS] Hybrid IDS + Decision Engine Running...")
     while True:
         analyze()
         time.sleep(5)

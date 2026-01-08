@@ -1,19 +1,23 @@
 from flask import Flask, request, render_template, redirect, session
 from flask_mysqldb import MySQL
+import logging
+from datetime import datetime
 import config
+import os
 
 # ---------------- APP INIT ----------------
 app = Flask(__name__)
 app.secret_key = config.SECRET_KEY
 
-# ---------------- LOGGING ----------------
-import logging
-from datetime import datetime
+# ---------------- ENSURE LOG DIR ----------------
+if not os.path.exists("logs"):
+    os.makedirs("logs")
 
+# ---------------- LOGGING (GET + POST) ----------------
 logging.basicConfig(
-    filename='logs/access.log',
+    filename="logs/access.log",
     level=logging.INFO,
-    format='%(asctime)s %(message)s'
+    format="%(asctime)s %(message)s"
 )
 
 @app.before_request
@@ -21,7 +25,9 @@ def log_request():
     logging.info(
         f"IP={request.remote_addr} "
         f"URL={request.path} "
-        f"ARGS={dict(request.args)}"
+        f"METHOD={request.method} "
+        f"ARGS={dict(request.args)} "
+        f"FORM={request.form.to_dict() if request.method == 'POST' else {}}"
     )
 
 # ---------------- MYSQL CONFIG ----------------
@@ -29,7 +35,6 @@ app.config['MYSQL_HOST'] = config.MYSQL_HOST
 app.config['MYSQL_USER'] = config.MYSQL_USER
 app.config['MYSQL_PASSWORD'] = config.MYSQL_PASSWORD
 app.config['MYSQL_DB'] = config.MYSQL_DB
-
 mysql = MySQL(app)
 
 # ---------------- LOGIN ----------------
@@ -43,7 +48,7 @@ def do_login():
     p = request.form['password']
 
     cur = mysql.connection.cursor()
-    # ❌ SQL Injection vulnerability (INTENTIONAL)
+    # ❌ INTENTIONAL SQL INJECTION VULNERABILITY
     cur.execute(f"SELECT * FROM users WHERE username='{u}' AND password='{p}'")
     user = cur.fetchone()
 
