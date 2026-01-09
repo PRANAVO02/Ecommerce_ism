@@ -31,6 +31,86 @@ Password Reset / Login Abuse (generic)
 
 All mapped exactly to your Flask app.
 
+
+Our IDS primarily detects known attacks using 
+signature-based rules, such as SQL injection and 
+access control violations. To detect unknown 
+attacks, we use anomaly-based detection, where
+ we monitor deviations from normal user behavior
+  in terms of request frequency, access patterns,
+   parameter structure, and navigation flow.
+    This allows the system to detect previously 
+    unseen attacks without relying on predefined
+     signatures.”
+
+                    ┌─────────────────────────┐
+                    │        Web Client        │
+                    │  (Browser / Attacker)   │
+                    └────────────┬────────────┘
+                                 │ HTTP Requests
+                                 ▼
+                    ┌─────────────────────────┐
+                    │      Flask Web App       │
+                    │  (Vulnerable App)       │
+                    └────────────┬────────────┘
+                                 │
+                                 │ Request Logging
+                                 │ (before_request)
+                                 ▼
+                    ┌─────────────────────────┐
+                    │      Access Log File     │
+                    │   logs/access.log       │
+                    └────────────┬────────────┘
+                                 │
+                                 │ Log Monitoring
+                                 ▼
+        ┌────────────────────────────────────────────────┐
+        │              IDS MONITORING ENGINE              │
+        │                                                  │
+        │  ┌──────────────────────────────────────────┐  │
+        │  │          Log Parser Module                │  │
+        │  │  - Extract IP, URL, Method, Params        │  │
+        │  └───────────────┬──────────────────────────┘  │
+        │                  │                             │
+        │                  ▼                             │
+        │  ┌──────────────────────────────────────────┐  │
+        │  │        Detection Engine                   │  │
+        │  │                                          │  │
+        │  │  Signature-Based Detection               │  │
+        │  │  - SQL Injection (6 variants)            │  │
+        │  │  - IDOR                                  │  │
+        │  │  - Price Manipulation                    │  │
+        │  │  - Forced Browsing                       │  │
+        │  │  - Scanner Detection                     │  │
+        │  │                                          │  │
+        │  │  Anomaly-Based Detection                 │  │
+        │  │  - Brute Force                           │  │
+        │  │  - Credential Stuffing                   │  │
+        │  │  - Login Rate Spike                      │  │
+        │  │  - Abnormal Access Flow                  │  │
+        │  │  - Parameter Pollution                   │  │
+        │  │  - Sequential ID Enumeration              │  │
+        │  └───────────────┬──────────────────────────┘  │
+        │                  │                             │
+        │                  ▼                             │
+        │  ┌──────────────────────────────────────────┐  │
+        │  │        Decision Engine                   │  │
+        │  │  - Severity Assessment                  │  │
+        │  │  - Policy Rules                         │  │
+        │  │  IF HIGH  → BLOCK                       │  │
+        │  │  IF MED   → RATE LIMIT                  │  │
+        │  └───────────────┬──────────────────────────┘  │
+        │                  │                             │
+        │                  ▼                             │
+        │  ┌──────────────────────────────────────────┐  │
+        │  │      Alert & Response Module              │  │
+        │  │  - Console Alerts                        │  │
+        │  │  - Attack Classification                 │  │
+        │  │  - Summary Dashboard                     │  │
+        │  └──────────────────────────────────────────┘  │
+        └────────────────────────────────────────────────┘
+
+
 🔍 Anomaly Detection Ideas for Your IDS
 1️⃣ Login Rate Anomaly (Beyond Brute Force)
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🚀 MySQL IDS v4.0 – FINAL (SIGNATURE + ANOMALY BASED)
+🚀 MySQL IDS v4.1 – FINAL (SIGNATURE + ANOMALY BASED)
 """
 
 import time
@@ -76,7 +76,7 @@ def extract_fields(line):
 
     return ip, url, args_dict, form_dict
 
-# ================= SQL INJECTION =================
+# ================= BASIC SQL INJECTION =================
 def detect_sql_injection(url, form):
     if url != "/login" or not form:
         return None
@@ -84,6 +84,37 @@ def detect_sql_injection(url, form):
     values = " ".join(str(v).lower() for v in form.values())
     if re.search(r"\b(or|and)\b", values) and re.search(r"['\"]", values):
         return ("SQL Injection", "Auth Bypass", "HIGH")
+    return None
+
+# ================= ADVANCED SQL INJECTION =================
+def detect_union_sqli(url, args, form):
+    payload = " ".join(map(str, list(args.values()) + list(form.values()))).lower()
+    if "union select" in payload:
+        return ("SQL Injection", "UNION Based SQLi", "HIGH")
+    return None
+
+def detect_comment_sqli(url, args, form):
+    payload = " ".join(map(str, list(args.values()) + list(form.values())))
+    if re.search(r"(--|#|/\*)", payload):
+        return ("SQL Injection", "Comment Injection", "HIGH")
+    return None
+
+def detect_time_based_sqli(url, args, form):
+    payload = " ".join(map(str, list(args.values()) + list(form.values()))).lower()
+    if re.search(r"(sleep\(|benchmark\(|pg_sleep\()", payload):
+        return ("SQL Injection", "Time-Based Blind SQLi", "HIGH")
+    return None
+
+def detect_stacked_queries(url, args, form):
+    payload = " ".join(map(str, list(args.values()) + list(form.values()))).lower()
+    if ";" in payload and re.search(r"(drop|insert|delete|update)", payload):
+        return ("SQL Injection", "Stacked Queries", "HIGH")
+    return None
+
+def detect_encoded_sqli(args, form):
+    payload = " ".join(map(str, list(args.values()) + list(form.values()))).lower()
+    if re.search(r"%27|%22|%3d|%2d%2d", payload):
+        return ("SQL Injection", "Encoded SQL Injection", "HIGH")
     return None
 
 # ================= BRUTE FORCE =================
@@ -149,23 +180,67 @@ def detect_price_manipulation(url, args):
         pass
     return None
 
-# ================= PARAMETER FLOOD =================
+# ================= PARAMETER POLLUTION =================
 def detect_param_flood(url, args, form):
-    total = len(args) + len(form)
-    if total >= PARAM_THRESHOLD:
+    if len(args) + len(form) >= PARAM_THRESHOLD:
         return ("Anomaly Detection", "Parameter Pollution", "MEDIUM")
     return None
 
-# ================= FLOW VIOLATION =================
+# ================= FLOW ANOMALY =================
 def detect_flow_anomaly(ip, url):
     now = time.time()
     user_flow[ip].append((url, now))
     user_flow[ip] = [(u, t) for u, t in user_flow[ip] if now - t <= FLOW_TIMEOUT]
 
     urls = [u for u, _ in user_flow[ip]]
-
     if url in ("/checkout", "/admin") and "/login" not in urls:
         return ("Anomaly Detection", "Broken Access Flow", "HIGH")
+    return None
+
+# ================= FORCED BROWSING =================
+def detect_forced_browsing(url):
+    sensitive = ["/admin", "/.git", "/config", "/backup"]
+    if url in sensitive:
+        return ("Access Control", "Forced Browsing", "HIGH")
+    return None
+
+# ================= METHOD TAMPERING =================
+def detect_method_tampering(line, url):
+    method = re.search(r"METHOD=([A-Z]+)", line)
+    if not method:
+        return None
+
+    method = method.group(1)
+    allowed = {
+        "/login": ["POST"],
+        "/add_to_cart": ["GET"],
+        "/orders": ["GET"],
+        "/products": ["GET"]
+    }
+
+    if url in allowed and method not in allowed[url]:
+        return ("Protocol Abuse", "HTTP Method Tampering", "MEDIUM")
+    return None
+
+# ================= MASS ASSIGNMENT =================
+def detect_mass_assignment(args, form):
+    forbidden = {"role", "is_admin", "status", "admin"}
+    for k in list(args.keys()) + list(form.keys()):
+        if k.lower() in forbidden:
+            return ("Business Logic", "Mass Assignment", "HIGH")
+    return None
+
+# ================= SESSION FIXATION =================
+def detect_session_fixation(args):
+    for k in args.keys():
+        if re.search(r"(session|sid|phpsessid)", k.lower()):
+            return ("Session Attack", "Session Fixation", "MEDIUM")
+    return None
+
+# ================= SCANNER DETECTION =================
+def detect_scanner(line):
+    if re.search(r"(sqlmap|nikto|acunetix|nmap)", line.lower()):
+        return ("Reconnaissance", "Automated Scanner", "HIGH")
     return None
 
 # ================= DECISION =================
@@ -180,20 +255,30 @@ def raise_alert(ip, url, attack, subtype, severity, action):
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     print(f"\n[{ts}] 🚨 ALERT #{alert_count}")
-    print(f"Attack    : {attack}")
-    print(f"Subtype   : {subtype}")
-    print(f"Severity  : {severity}")
-    print(f"IP        : {ip}")
-    print(f"URL       : {url}")
-    print(f"Action    : {action}")
+    print(f"Attack   : {attack}")
+    print(f"Subtype  : {subtype}")
+    print(f"Severity : {severity}")
+    print(f"IP       : {ip}")
+    print(f"URL      : {url}")
+    print(f"Action   : {action}")
 
-# ================= MAIN =================
+# ================= MAIN ANALYSIS =================
 def analyze():
     for line in read_new_logs():
         ip, url, args, form = extract_fields(line)
 
         detectors = (
             lambda: detect_sql_injection(url, form),
+            lambda: detect_union_sqli(url, args, form),
+            lambda: detect_comment_sqli(url, args, form),
+            lambda: detect_time_based_sqli(url, args, form),
+            lambda: detect_stacked_queries(url, args, form),
+            lambda: detect_encoded_sqli(args, form),
+            lambda: detect_scanner(line),
+            lambda: detect_method_tampering(line, url),
+            lambda: detect_mass_assignment(args, form),
+            lambda: detect_session_fixation(args),
+            lambda: detect_forced_browsing(url),
             lambda: detect_bruteforce(ip, url),
             lambda: detect_credential_stuffing(ip, url, form),
             lambda: detect_login_rate(ip, url),
@@ -225,7 +310,7 @@ def print_summary():
 
 # ================= RUN =================
 def main():
-    print("🚀 MySQL IDS v4.0 STARTED")
+    print("🚀 MySQL IDS v4.1 STARTED")
     print(f"📁 Monitoring {LOG_FILE}")
     print("-" * 60)
     try:
