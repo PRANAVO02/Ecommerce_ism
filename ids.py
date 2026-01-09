@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 🚀 MySQL IDS v4.1 – FINAL (SIGNATURE + ANOMALY BASED)
++ IPS ENFORCEMENT (ADD-ONLY)
 """
 
 import time
@@ -9,6 +10,13 @@ import os
 import ast
 from collections import Counter, defaultdict, deque
 from datetime import datetime
+
+# 🔐 IPS ADDITION (IMPORT ONLY)
+from security.enforcement import (
+    block_ip,
+    rate_limit_ip,
+    quarantine_ip
+)
 
 # ================= CONFIG =================
 LOG_FILE = "logs/access.log"
@@ -243,15 +251,28 @@ def detect_scanner(line):
         return ("Reconnaissance", "Automated Scanner", "HIGH")
     return None
 
-# ================= DECISION =================
+# ================= DECISION (EXTENDED, NOT REPLACED) =================
 def decision_engine(severity):
-    return "BLOCK" if severity == "HIGH" else "RATE_LIMIT"
+    if severity == "HIGH":
+        return "BLOCK"
+    if severity == "MEDIUM":
+        return "RATE_LIMIT"
+    return "MONITOR"
 
-# ================= ALERT =================
+# ================= ALERT + IPS ENFORCEMENT =================
 def raise_alert(ip, url, attack, subtype, severity, action):
     global alert_count
     alert_count += 1
     attack_stats[f"{attack} → {subtype}"] += 1
+
+    # 🔐 IPS ACTIONS (ADD-ONLY)
+    if action == "BLOCK":
+        block_ip(ip)
+    elif action == "RATE_LIMIT":
+        rate_limit_ip(ip)
+    elif action == "QUARANTINE":
+        quarantine_ip(ip)
+
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     print(f"\n[{ts}] 🚨 ALERT #{alert_count}")
@@ -295,7 +316,14 @@ def analyze():
                 key = f"{ip}:{subtype}:{int(time.time()//ALERT_TIMEOUT)}"
                 if key not in seen_alerts:
                     seen_alerts.add(key)
-                    raise_alert(ip, url, attack, subtype, severity, decision_engine(severity))
+                    raise_alert(
+                        ip,
+                        url,
+                        attack,
+                        subtype,
+                        severity,
+                        decision_engine(severity)
+                    )
                 break
 
 # ================= SUMMARY =================
@@ -310,7 +338,7 @@ def print_summary():
 
 # ================= RUN =================
 def main():
-    print("🚀 MySQL IDS v4.1 STARTED")
+    print("🚀 MySQL IDS v4.1 + IPS STARTED")
     print(f"📁 Monitoring {LOG_FILE}")
     print("-" * 60)
     try:

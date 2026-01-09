@@ -4,6 +4,14 @@ import logging
 import config
 import os
 
+# 🔐 IPS ADDITION (IMPORT ONLY)
+import time
+from security.enforcement import (
+    is_blocked,
+    is_rate_limited,
+    is_quarantined
+)
+
 # ---------------- APP INIT ----------------
 app = Flask(__name__)
 app.secret_key = config.SECRET_KEY
@@ -28,6 +36,23 @@ def log_request():
         f"ARGS={dict(request.args)} "
         f"FORM={request.form.to_dict() if request.method == 'POST' else {}}"
     )
+
+# 🔐 IPS ENFORCEMENT LAYER (ADD-ONLY)
+@app.before_request
+def ips_enforcement_layer():
+    ip = request.remote_addr
+
+    # HARD BLOCK
+    if is_blocked(ip):
+        return "🚫 Access blocked by IPS", 403
+
+    # RATE LIMIT
+    if is_rate_limited(ip):
+        time.sleep(3)
+
+    # QUARANTINE → DECEPTION
+    if is_quarantined(ip):
+        return redirect('/decoy')
 
 # ---------------- MYSQL CONFIG ----------------
 app.config['MYSQL_HOST'] = config.MYSQL_HOST
@@ -112,6 +137,11 @@ def admin():
     cur.execute("SELECT * FROM users")
     users = cur.fetchall()
     return render_template('admin.html', users=users)
+
+# 🪤 DECEPTION ENTRY POINT (ADD-ONLY)
+@app.route('/decoy')
+def decoy():
+    return "🪤 Deception environment active"
 
 # ---------------- LOGOUT ----------------
 @app.route('/logout')
