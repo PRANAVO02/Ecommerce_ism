@@ -1,0 +1,281 @@
+✅ What This IDS Now Detects
+Signature / Rule-based
+
+SQL Injection (login)
+
+IDOR (orders)
+
+Price Manipulation (cart)
+
+Anomaly-based (NEW)
+
+Brute Force Login
+
+Credential Stuffing
+
+Login Rate Spike
+
+Abnormal Access Flow
+
+Sequential ID Enumeration
+
+Parameter Pollution / Fuzzing
+
+Cart Quantity / Price Abuse
+
+Admin Page Access Anomaly
+
+Timing-based Bot Detection
+
+Password Reset / Login Abuse (generic)
+
+All mapped exactly to your Flask app.
+
+🔍 Anomaly Detection Ideas for Your IDS
+1️⃣ Login Rate Anomaly (Beyond Brute Force)
+
+What it detects
+
+Sudden spike in login attempts from one IP or user
+
+Even if passwords are correct
+
+Example
+
+Normal: 1–2 logins / minute
+Attack: 30 logins / minute
+
+
+Why useful
+
+Detects credential stuffing
+
+Detects bot-driven authentication abuse
+
+Logic
+
+Track /login requests per IP
+
+Alert if rate exceeds baseline
+
+2️⃣ Credential Stuffing Detection
+
+What it detects
+
+Same IP trying many usernames
+
+Few attempts per username, but many total
+
+Example
+
+IP → admin, root, test, user1, user2...
+
+
+Logic
+
+Track unique usernames per IP
+
+Alert if count > threshold in time window
+
+Severity
+
+HIGH
+
+3️⃣ Session Hijacking Anomaly
+
+What it detects
+
+Same session ID used from:
+
+Different IPs
+
+Different User-Agents
+
+Example
+
+Session abc123
+IP1 → India
+IP2 → Europe (5 seconds later)
+
+
+Logic
+
+Track session → IP mapping
+
+Alert on mismatch
+
+Why important
+
+Real-world account takeover detection
+
+4️⃣ Abnormal Access Pattern (Broken Flow)
+
+What it detects
+
+User accesses restricted pages without proper flow
+
+Example
+
+/checkout
+/payment
+/admin
+
+
+Without visiting:
+
+/login
+/cart
+
+
+Logic
+
+Track normal URL sequence
+
+Alert if sequence violated
+
+Detects
+
+Forced browsing
+
+Logic abuse
+
+5️⃣ ID Enumeration Anomaly (Advanced IDOR)
+
+You already detect ID change.
+This improves it.
+
+What it detects
+
+Sequential UID access
+
+Example
+
+uid=101
+uid=102
+uid=103
+uid=104
+
+
+Logic
+
+Detect incremental patterns
+
+Alert if monotonic sequence
+
+6️⃣ Abnormal Parameter Count
+
+What it detects
+
+Too many parameters in request
+
+Example
+
+Normal: 3 params
+Attack: 20 params
+
+
+Detects
+
+Parameter pollution
+
+Mass assignment
+
+Fuzzing
+
+7️⃣ Cart Abuse / Quantity Flooding
+
+What it detects
+
+Same user adding extreme quantities rapidly
+
+Example
+
+add_to_cart qty=9999
+add_to_cart qty=8888
+
+
+Logic
+
+Track quantity patterns
+
+Rate + value anomaly
+
+8️⃣ Password Reset Abuse
+
+What it detects
+
+Excessive /forgot-password requests
+
+Why
+
+Used for user enumeration & DoS
+
+Logic
+
+Rate-limit reset requests per IP/email
+
+9️⃣ API Abuse / Scraping Behavior
+
+What it detects
+
+High request frequency to:
+
+/products
+
+/search
+
+/api/*
+
+Indicators
+
+Constant interval requests
+
+No assets requested (CSS/JS/images)
+
+🔟 User-Agent Anomaly
+
+What it detects
+
+Suspicious or changing user agents
+
+Example
+
+curl
+sqlmap
+python-requests
+
+
+Logic
+
+UA mismatch for same session/IP
+
+🔥 11️⃣ Timing Anomaly (Bot Detection)
+
+What it detects
+
+Requests at perfectly fixed intervals
+
+Example
+
+Every 2.000 seconds exactly
+
+
+Why
+
+Humans don’t behave like this
+
+12️⃣ Data Exfiltration Pattern
+
+What it detects
+
+Large responses accessed rapidly
+
+Example
+
+/export
+/download
+/orders?limit=10000
+
+
+Logic
+
