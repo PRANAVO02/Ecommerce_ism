@@ -6,19 +6,29 @@ from datetime import datetime
 LOG_FILE = "logs/access.log"
 
 # ================= SIGNATURE PATTERNS =================
-SQLI_PATTERNS = [
-    r"(\bor\b\s+1=1)",
+# Classic keyword-based SQLi
+SQLI_KEYWORD_PATTERNS = [
+    r"\bor\b\s+\d+\s*=\s*\d+",
+    r"\band\b\s+\d+\s*=\s*\d+",
     r"union\s+select",
+    r"drop\s+table",
     r"--",
     r";",
-    r"drop\s+table",
     r"select\s+\*"
+]
+
+# Logic-based SQLi (NO errors, NO keywords)
+SQLI_LOGIC_PATTERNS = [
+    r"\w+\s*=\s*\w+",        # a=a , x=y
+    r"\d+\s*=\s*\d+",        # 1=1
+    r"\w+'\s*=\s*'\w+",      # 'a'='a'
+    r"\bor\b|\band\b",       # logical operators
 ]
 
 # ================= ANOMALY BASELINES =================
 REQUEST_LIMIT = 20
 LOGIN_LIMIT = 3
-MAX_INPUT_LENGTH = 100
+MAX_INPUT_LENGTH = 80
 
 request_counter = defaultdict(list)
 login_counter = defaultdict(list)
@@ -41,22 +51,30 @@ def read_new_logs():
 def extract_fields(line):
     ip = re.search(r"IP=([\d\.]+)", line)
     url = re.search(r"URL=([^\s]+)", line)
-    args = re.search(r"ARGS=(\{.*?\})", line)
     form = re.search(r"FORM=(\{.*?\})", line)
+    args = re.search(r"ARGS=(\{.*?\})", line)
 
-    payload = (args.group(1) if args else "") + " " + (form.group(1) if form else "")
+    payload = (form.group(1) if form else "") + " " + (args.group(1) if args else "")
 
     return (
         ip.group(1) if ip else "unknown",
         url.group(1) if url else "unknown",
-        payload
+        payload.lower()
     )
 
-# ================= SIGNATURE DETECTION =================
-def detect_signature(line):
-    for pattern in SQLI_PATTERNS:
-        if re.search(pattern, line, re.IGNORECASE):
-            return "SQL Injection"
+# ================= SQL INJECTION DETECTION =================
+def detect_sql_injection(url, payload):
+    # --- Keyword-based SQLi ---
+    for pattern in SQLI_KEYWORD_PATTERNS:
+        if re.search(pattern, payload, re.IGNORECASE):
+            return "SQL Injection (Keyword-Based)"
+
+    # --- Logic-based SQLi (IMPORTANT FIX) ---
+    if url == "/login":
+        for pattern in SQLI_LOGIC_PATTERNS:
+            if re.search(pattern, payload):
+                return "SQL Injection (Logic-Based)"
+
     return None
 
 # ================= ANOMALY DETECTION =================
@@ -69,10 +87,6 @@ def detect_anomaly(ip, url, payload):
     request_counter[ip].append(now)
     request_counter[ip] = [t for t in request_counter[ip] if now - t < 60]
 
-    if url in ["/login", "/admin", "/orders", "/checkout"]:
-        if len(request_counter[ip]) > REQUEST_LIMIT:
-            return "High Request Rate"
-
     if url == "/login":
         login_counter[ip].append(now)
         login_counter[ip] = [t for t in login_counter[ip] if now - t < 60]
@@ -80,20 +94,12 @@ def detect_anomaly(ip, url, payload):
             return "Brute Force Login"
 
     if len(payload) > MAX_INPUT_LENGTH:
-        return "Abnormally Long Input"
+        return "Abnormally Structured Input"
 
     if "/orders" in url and "uid=" in payload:
         idor_counter[ip] += 1
         if idor_counter[ip] > 3:
             return "ID Enumeration (IDOR)"
-
-    if "price=" in payload:
-        try:
-            price = int(re.search(r"price=(\d+)", payload).group(1))
-            if price <= 0 or price > 100000:
-                return "Price Manipulation"
-        except:
-            pass
 
     return None
 
@@ -106,20 +112,12 @@ def decision_engine(ip, attack_type, severity):
         a for a in attack_history[ip] if now - a[2] < 300
     ]
 
-    high_count = sum(1 for a in attack_history[ip] if a[1] == "HIGH")
-    medium_count = sum(1 for a in attack_history[ip] if a[1] == "MEDIUM")
+    high = sum(1 for a in attack_history[ip] if a[1] == "HIGH")
 
     if severity == "HIGH":
-        if high_count >= 2:
-            return "BLOCK + SELF-HEAL"
-        return "IMMEDIATE RESPONSE"
+        return "IMMEDIATE RESPONSE" if high < 2 else "BLOCK + SELF-HEAL"
 
-    if severity == "MEDIUM":
-        if medium_count >= 3:
-            return "DECEPTION"
-        return "MONITOR"
-
-    return "LOG"
+    return "MONITOR"
 
 # ================= MAIN LOOP =================
 def analyze():
@@ -129,32 +127,30 @@ def analyze():
         ip, url, payload = extract_fields(line)
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        sig = detect_signature(line)
-        if sig:
-            severity = "HIGH"
-            action = decision_engine(ip, sig, severity)
+        sql = detect_sql_injection(url, payload)
+        if sql:
+            action = decision_engine(ip, sql, "HIGH")
 
-            print(f"\n[{timestamp}] [ALERT] 🚨 SIGNATURE ATTACK")
-            print(f"Type     : {sig}")
-            print(f"Severity : {severity}")
+            print(f"\n[{timestamp}] [ALERT] 🚨 SQL INJECTION DETECTED")
+            print(f"Type     : {sql}")
+            print(f"Severity : HIGH")
             print(f"IP       : {ip}")
             print(f"Action   : {action}")
             continue
 
         anomaly = detect_anomaly(ip, url, payload)
         if anomaly:
-            severity = "MEDIUM"
-            action = decision_engine(ip, anomaly, severity)
+            action = decision_engine(ip, anomaly, "MEDIUM")
 
             print(f"\n[{timestamp}] [ALERT] ⚠️ ANOMALY DETECTED")
             print(f"Type     : {anomaly}")
-            print(f"Severity : {severity}")
+            print(f"Severity : MEDIUM")
             print(f"IP       : {ip}")
             print(f"Action   : {action}")
 
 # ================= RUN =================
 if __name__ == "__main__":
-    print("[IDS] Hybrid IDS + Decision Engine + Timestamp Running...")
+    print("[IDS] Hybrid IDS + Logic-Based SQLi Detection Running...")
     while True:
         analyze()
         time.sleep(5)
